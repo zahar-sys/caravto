@@ -1,0 +1,10 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { calculate, mergeItem, validateRequest, defaults, catalog } from '../src/lib/domain.ts';
+const oil={category:'oil',variant:'standard',quantity:1,complex:false,description:''};
+test('minimum applies to labor; callout added afterwards',()=>{const p={...defaults.pricing,minimum:3000,callout:700};const r=calculate([oil],p,true);assert.equal(r.labor,3000);assert.equal(r.callout,700);assert.equal(r.known,3700)});
+test('complexity applied per line then rounded half up',()=>{const p={...defaults.pricing,minimum:0,complexPercent:15,prices:{...defaults.pricing.prices,'oil:standard':999}};assert.equal(calculate([{...oil,quantity:3,complex:true}],p,false).known,3447)});
+test('manual estimates never shown as zero; mixed known amount stays separate',()=>{const other={...oil,category:'other',variant:'photo',description:'Шум двигателя'};assert.equal(calculate([other],defaults.pricing,false).known,null);const r=calculate([oil,other],defaults.pricing,false);assert.equal(r.manual,1);assert.equal(r.known,defaults.pricing.minimum)});
+test('identical items merge; settings remain separate',()=>{const a=mergeItem([],oil);assert.equal(mergeItem(a,oil)[0].quantity,2);assert.equal(mergeItem(a,{...oil,complex:true}).length,2)});
+test('rejects manipulated tariff, fractional quantity, missing other photo and time without date',()=>{assert.throws(()=>calculate([{...oil,variant:'hack'}],defaults.pricing,false));assert.throws(()=>calculate([{...oil,quantity:1.5}],defaults.pricing,false));const b={name:'Иван',phone:'+79990000000',address:'Москва, Лесная',car:'Тестовый автомобиль',items:[oil],photos:[],consent:true,date:'',time:'14:00',comment:'',outside:false};assert.equal(validateRequest(b).errors.date,'Выберите дату для указанного времени');assert.ok(validateRequest({...b,time:'',items:[{...oil,category:'other',variant:'photo',description:'Шум'}]}).errors.photos)});
+test('all advertised services have positive tariffs',()=>{for(const c of catalog.filter(c=>c.id!=='other'))for(const v of c.variants)assert.ok(defaults.pricing.prices[c.id+':'+v.id]>0)});

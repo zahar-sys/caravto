@@ -1,0 +1,1 @@
+export default function NotFound(){return <main className="offline-main"><h1>Этой страницы нет.</h1><p>Проверьте ссылку или вернитесь к выбору работ.</p><a className="button" href="/">На главную</a></main>}

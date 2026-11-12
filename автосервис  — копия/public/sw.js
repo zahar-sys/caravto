@@ -1,0 +1,4 @@
+const CACHE='rovny-public-v1';const FILES=['/offline.html','/icons/icon-192.png','/icons/icon-512.png','/car-poster.svg'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));self.skipWaiting()});
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.origin!==self.location.origin||e.request.method!=='GET')return;if(u.pathname.startsWith('/api/')||u.pathname.startsWith('/admin')||u.pathname.startsWith('/order/')||u.pathname.startsWith('/checkout'))return;if(e.request.mode==='navigate'){e.respondWith(fetch(e.request).catch(()=>caches.match('/offline.html')));return}if(FILES.includes(u.pathname))e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});

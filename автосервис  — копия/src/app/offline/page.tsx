@@ -1,0 +1,1 @@
+export const metadata={title:'Нет соединения',robots:{index:false,follow:false}};export default function Page(){return <main className="offline-main"><h1>Кажется, мы вне сети.</h1><p>Подключитесь к интернету, чтобы отправить заявку или проверить её статус. Черновик остался в этом браузере.</p><a className="button" href="/">Попробовать снова</a></main>}

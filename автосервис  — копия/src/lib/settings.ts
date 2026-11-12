@@ -1,0 +1,5 @@
+import { z } from 'zod';
+import { defaults,type Settings } from './domain';
+import { get } from './store';
+export const settingsSchema=z.object({company:z.object({name:z.string().min(2).max(80),city:z.string().min(2).max(80),address:z.string().max(300),territory:z.string().max(300),phone:z.string().max(30).refine(v=>!v||/^\+?[\d\s()\-]{10,25}$/.test(v),'Введите действующий телефон'),telegram:z.string().max(100).refine(v=>!v||/^https:\/\/t\.me\/[a-zA-Z0-9_]{5,}$/.test(v),'Укажите ссылку https://t.me/...'),accent:z.string().regex(/^#[0-9a-fA-F]{6}$/),hours:z.string().max(100)}),pricing:z.object({prices:z.record(z.number().int().min(1).max(1000000)),minimum:z.number().int().min(0).max(1000000),complexPercent:z.number().min(0).max(200),callout:z.number().int().min(0).max(100000)}),game:z.object({mode:z.enum(['off','fun','bonus']),amount:z.number().int().min(0).max(100000),days:z.number().int().min(1).max(365),minimum:z.number().int().min(0).max(1000000)}),characters:z.object({faces:z.boolean(),speech:z.boolean(),personality:z.string().max(100)})});
+export async function settings():Promise<Settings>{return await get<Settings>('settings')??structuredClone(defaults)}
